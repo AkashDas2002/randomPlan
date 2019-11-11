@@ -7,8 +7,16 @@
 
 int random_generator(){
   int rand = open("/dev/random", O_RDONLY);
+  if (rand < 0){
+    printf("There's an error %d: %s\n", errno, strerror(errno));
+    return errno;
+  }
   int buf;
-  read(rand, &buf, sizeof(int));
+  int val = read(rand, &buf, sizeof(int));
+  if (val < 0){
+    printf("There's an error %d: %s\n", errno, strerror(errno));
+    return errno;
+  }
   close(rand);
   return buf;
 }
@@ -38,10 +46,32 @@ int main() {
   int writing = write(newFile, someArray, 10 * sizeof(int));
   if (writing < 0){
     printf("There's an error %d: %s\n", errno, strerror(errno));
-    return -1;
+    return errno;
   }
-  close(newFile);
+  writing = close(newFile);
+  if (writing  < 0){
+    printf("There's an error %d: %s\n", errno, strerror(errno));
+    return errno;
+  }
 
+  //Writing to a file
+  printf("\nReading numbers from file...\n");
+  int newFile2 = open("randomOutput", O_RDONLY);
+  int newArray[10];
+  int reading = read(newFile2, newArray, 10 * sizeof(int));
+  reading = close(newFile2);
+  if (writing  < 0){
+    printf("There's an error %d: %s\n", errno, strerror(errno));
+    return errno;
+  }
+
+  printf("\nVerification that written values were the same:\n");
+  //Print out elements of newArray
+  index = 0;
+  while(index < 10){
+    printf("random %d: %d\n", index, newArray[index]);
+    index++;
+  }
 
   return 0;
 }
